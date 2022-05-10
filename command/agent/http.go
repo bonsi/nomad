@@ -411,6 +411,9 @@ func (s HTTPServer) registerHandlers(enableDebug bool) {
 	s.mux.HandleFunc("/v1/namespace", s.wrap(s.NamespaceCreateRequest))
 	s.mux.HandleFunc("/v1/namespace/", s.wrap(s.NamespaceSpecificRequest))
 
+	s.mux.HandleFunc("/v1/vars", s.wrap(s.SecureVariablesRequest))
+	s.mux.HandleFunc("/v1/var/", s.wrap(s.SecureVariableSpecificRequest))
+
 	uiConfigEnabled := s.agent.config.UI != nil && s.agent.config.UI.Enabled
 
 	if uiEnabled && uiConfigEnabled {

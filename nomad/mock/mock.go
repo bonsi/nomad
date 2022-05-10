@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/hashicorp/nomad/helper"
 	"github.com/hashicorp/nomad/helper/envoy"
 	"github.com/hashicorp/nomad/helper/uuid"
@@ -2295,4 +2296,24 @@ func ServiceRegistrations() []*structs.ServiceRegistration {
 			Port:        29000,
 		},
 	}
+}
+
+func SecureVariable() *structs.SecureVariable {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	petname.NonDeterministicMode()
+	pet := petname.Generate(r.Intn(3)+1, "/")
+
+	u1 := uuid.Generate()
+	sv := &structs.SecureVariable{
+		Path: pet,
+		Meta: map[string]string{"team": u1},
+		Items: map[string]string{
+			"username": petname.Generate(r.Intn(2)+1, "-"),
+			"password": uuid.Generate(),
+		},
+		CreateIndex: 100,
+		ModifyIndex: 200,
+	}
+	return sv
 }
