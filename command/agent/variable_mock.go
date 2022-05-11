@@ -76,13 +76,7 @@ func init() {
 }
 
 func SV_List(args *structs.SecureVariablesListRequest, out *structs.SecureVariablesListResponse) {
-	var vars []*structs.SecureVariable
-	vars = make([]*structs.SecureVariable, 0, len(mvs.backingMap))
-	for _, sVar := range mvs.backingMap {
-		outVar := sVar.Copy()
-		vars = append(vars, &outVar)
-	}
-	out.SecureVariables = vars
+	out.SecureVariables = mvs.List(args.Prefix)
 	out.QueryMeta.KnownLeader = true
 	out.QueryMeta.Index = 999
 	out.QueryMeta.LastContact = 19
