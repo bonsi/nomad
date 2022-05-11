@@ -28,7 +28,7 @@ func (s *HTTPServer) SecureVariablesRequest(resp http.ResponseWriter, req *http.
 	setMeta(resp, &out.QueryMeta)
 
 	if out.SecureVariables == nil {
-		out.SecureVariables = make([]*structs.SecureVariable, 0)
+		out.SecureVariables = make([]*structs.SecureVariableStub, 0)
 	}
 	return out.SecureVariables, nil
 }
@@ -80,7 +80,7 @@ func (s *HTTPServer) SecureVariableUpsert(resp http.ResponseWriter, req *http.Re
 	// Parse the SecureVariable
 	var SecureVariable structs.SecureVariable
 	if err := decodeBody(req, &SecureVariable); err != nil {
-		return nil, CodedError(500, err.Error())
+		return nil, CodedError(http.StatusBadRequest, err.Error())
 	}
 	SecureVariable.Path = SecureVariablePath
 	// Format the request
