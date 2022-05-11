@@ -11,7 +11,18 @@ type SecureVariable struct {
 	ModifyTime  time.Time         `json:"ModifyTime,omitempty"`
 	Items       map[string]string `json:"Items,omitempty"`
 	Meta        map[string]string `json:"Meta,omitempty"`
-	Version     int64             `json:"version,omitempty"`
+	Version     int64             `json:"Version,omitempty"`
+}
+
+type SecureVariableStub struct {
+	Namespace   string            `json:"Namespace"`
+	Path        string            `json:"Path"`
+	CreateIndex int64             `json:"CreateIndex"`
+	CreateTime  time.Time         `json:"CreateTime"`
+	ModifyIndex int64             `json:"ModifyIndex"`
+	ModifyTime  time.Time         `json:"ModifyTime"`
+	Meta        map[string]string `json:"Meta"`
+	Version     int64             `json:"Version"`
 }
 
 // SecureVariablesListRequest is used to request a list of namespaces
@@ -21,7 +32,7 @@ type SecureVariablesListRequest struct {
 
 // SecureVariablesListResponse is used for a list request
 type SecureVariablesListResponse struct {
-	SecureVariables []*SecureVariable
+	SecureVariables []*SecureVariableStub
 	QueryMeta
 }
 
@@ -73,6 +84,24 @@ func (sv SecureVariable) Copy() SecureVariable {
 	for k, v := range sv.Items {
 		out.Items[k] = v
 	}
+	for k, v := range sv.Meta {
+		out.Meta[k] = v
+	}
+	return out
+}
+
+func (sv SecureVariable) AsStub() SecureVariableStub {
+	out := SecureVariableStub{
+		Namespace:   sv.Namespace,
+		Path:        sv.Path,
+		CreateIndex: sv.CreateIndex,
+		CreateTime:  sv.CreateTime,
+		ModifyIndex: sv.ModifyIndex,
+		ModifyTime:  sv.ModifyTime,
+		Meta:        make(map[string]string, len(sv.Meta)),
+		Version:     sv.Version,
+	}
+
 	for k, v := range sv.Meta {
 		out.Meta[k] = v
 	}
