@@ -64,6 +64,20 @@ var (
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
+	allowCORSWrite = cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"HEAD", "GET", "PUT", "POST"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
+	makeCORSWithMethods = func(methods ...string) *cors.Cors {
+		return cors.New(cors.Options{
+			AllowedOrigins:   []string{"*"},
+			AllowedMethods:   methods,
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+		})
+	}
 )
 
 type handlerFn func(resp http.ResponseWriter, req *http.Request) (interface{}, error)
@@ -411,8 +425,8 @@ func (s HTTPServer) registerHandlers(enableDebug bool) {
 	s.mux.HandleFunc("/v1/namespace", s.wrap(s.NamespaceCreateRequest))
 	s.mux.HandleFunc("/v1/namespace/", s.wrap(s.NamespaceSpecificRequest))
 
-	s.mux.HandleFunc("/v1/vars", s.wrap(s.SecureVariablesRequest))
-	s.mux.HandleFunc("/v1/var/", s.wrap(s.SecureVariableSpecificRequest))
+	s.mux.Handle("/v1/vars", wrapCORS(s.wrap(s.SecureVariablesRequest)))
+	s.mux.Handle("/v1/var/", wrapCORSWithAllowedMethods(s.wrap(s.SecureVariableSpecificRequest), "GET", "PUT", "DELETE", "HEAD"))
 
 	uiConfigEnabled := s.agent.config.UI != nil && s.agent.config.UI.Enabled
 
@@ -886,4 +900,9 @@ func (s *HTTPServer) wrapUntrustedContent(handler handlerFn) handlerFn {
 // wrapCORS wraps a HandlerFunc in allowCORS and returns a http.Handler
 func wrapCORS(f func(http.ResponseWriter, *http.Request)) http.Handler {
 	return allowCORS.Handler(http.HandlerFunc(f))
+}
+
+// wrapCORSWithAllowedMethods wraps a HandlerFunc in allowCORSWrite and returns a http.Handler
+func wrapCORSWithAllowedMethods(f func(http.ResponseWriter, *http.Request), methods ...string) http.Handler {
+	return makeCORSWithMethods(methods...).Handler(http.HandlerFunc(f))
 }
